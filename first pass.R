@@ -120,12 +120,12 @@ checkouts$spec_language = ifelse(checkouts$test %in% c('SPANISH','FRENCH','CHINE
                                  checkouts$test,'')
 
 
-<<<<<<< HEAD
+
 #Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group. So at least we have something valuable here, certain languages see bumps.
-=======
+
 #Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group.
 #So at least we have something valuable here, certain languages see bumps.
->>>>>>> 0db9048a0415b8de79d1fd780a5f7d1b90cadfb3
+
 checkouts %>% 
   filter(Category.Group=='Language',spec_language!='') %>% 
   select(monthdate,spec_language) %>% 
@@ -134,17 +134,16 @@ checkouts %>%
   ggplot(aes(x=monthdate,y=counts,group=spec_language,color=spec_language,label=spec_language))+geom_line()
 
 
-<<<<<<< HEAD
 
 #checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
 #one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the checkouts generally.
-=======
+
 checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
 #one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. 
 #It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location 
 #heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the 
 #checkouts generally.
->>>>>>> 0db9048a0415b8de79d1fd780a5f7d1b90cadfb3
+
 
 
 #Get most recent report dates only for each bibnumber... Should I add more later to this?
