@@ -26,7 +26,8 @@ list(colnames(key))
 #Category.Group - Fiction, Nonfiction, etc.
 #Category.Subgroup - Biography, ESL,etc.
 
-#I noticed from a first grab that the column names are a bit off. I'm changing the column names to match the data files so that each extraction doesn't need an update.
+#I noticed from a first grab that the column names are a bit off. I'm changing the column names to match the data files so that each
+#extraction doesn't need an update.
 names(key)[1] = 'Collection'
 
 
@@ -36,7 +37,8 @@ names(key)[1] = 'Collection'
 #Actual book data here.
 book_data = read.csv('data/Library_Collection_Inventory.csv')
 
-#same column changing as above. Since these are referential items I'm fixing them to be in line with the checkout data that will come in over time.
+#same column changing as above. Since these are referential items I'm fixing them to be in line with the checkout data that will
+#come in over time.
 names(book_data)[1] = 'BibNumber'
 names(book_data)[9] = 'Collection'
 
@@ -57,18 +59,21 @@ book_data$clean_pubyear_last = str_sub(str_extract(book_data$PublicationYear,"\\
 
 #Publisher = literal publisher
 #Subjects = list of subject relevancy
-#ItemType = This can be joined to Integrated_Library_System__ILS_Data_Dictionary for more info:Code,Description,Code Type,Format Group,Format Subgroup,Category Group,Category Subgroup. This might be valuable.
+#ItemType = This can be joined to Integrated_Library_System__ILS_Data_Dictionary for more info:Code,Description,Code Type,
+            #Format Group,Format Subgroup,Category Group,Category Subgroup. This might be valuable.
 
 #FloatingItem  = nfc. 84.7% null
 #ItemLocation = probably physical location, could be library, city, state level?
 #ReportDate = 2 days, 10/1 and 9/1, same year. 
 #ItemCount = count of copies probably.
 
-##Overall, looks like a few of these can be stripped, FloatingItem is one of them. I think we can scrape out some of the report dates as well, so look for duplications/updates there to see if that's an accurate thought. I wonder if the publisher will be useful. 
+##Overall, looks like a few of these can be stripped, FloatingItem is one of them. I think we can scrape out some of the report 
+##dates as well, so look for duplications/updates there to see if that's an accurate thought. I wonder if the publisher will be useful. 
 
 
 
-#Next file is the 2017 checkout data. The assumption being that all the yearly data will have the same layout, perhaps not trends but this will be a good start.
+#Next file is the 2017 checkout data. The assumption being that all the yearly data will have the same layout, perhaps not trends
+#but this will be a good start.
 checkouts = read.csv('data/Checkouts_By_Title_Data_Lens_2017.csv')
 
 #Maybe there's a good reason for minute/second accuracy of checkouts? Going to give myself the leeway that probably not.
@@ -80,29 +85,47 @@ checkouts$monthdate = floor_date(checkouts$date,unit="month")
 
 
 
-#and add in the key here to have a full start of the 2017 checkouts. this is basically the grouped book data without being the actual book. #This is kind of a round 2, but there isn't much to look at in isolated fashion.
+#and add in the key here to have a full start of the 2017 checkouts. this is basically the grouped book data without being the
+#actual book. #This is kind of a round 2, but there isn't much to look at in isolated fashion.
 checkouts = merge(checkouts,key,by='Collection')
 
 
 
 
 
-#example of testing checkout rates by a type, in this case Format.Group. Here we see that print has a much larger overall count, but the Media and Print trends are about dead in line. So we can probably kill this as a useful feature.
-checkouts %>% select(monthdate,Format.Group) %>% group_by(monthdate,Format.Group) %>% summarize(counts=length(Format.Group)) %>% ggplot(aes(x=monthdate,y=counts,group=Format.Group,color=Format.Group))+geom_line()
+#example of testing checkout rates by a type, in this case Format.Group. Here we see that print has a much larger overall count, 
+#but the Media and Print trends are about dead in line. So we can probably kill this as a useful feature.
+checkouts %>% 
+  select(monthdate,Format.Group) %>%
+  group_by(monthdate,Format.Group) %>% 
+  summarize(counts=length(Format.Group)) %>% 
+  ggplot(aes(x=monthdate,y=counts,group=Format.Group,color=Format.Group))+geom_line()
 
 
 
-#So now that I'm seeing this one, I'm going to walk back the prior comment a little. There's a distinct spike in June and it dies near the end of the year. I would guess this correlates to schools releasing, students stop pulling from school libraries. This became apparent when I noticed the jump with Fiction specifically. 
-checkouts %>% select(monthdate,Category.Group) %>% group_by(monthdate,Category.Group) %>% summarize(counts=length(Category.Group)) %>% ggplot(aes(x=monthdate,y=counts,group=Category.Group,color=Category.Group))+geom_line()
+#So now that I'm seeing this one, I'm going to walk back the prior comment a little. There's a distinct spike in June and it 
+#dies near the end of the year. I would guess this correlates to schools releasing, students stop pulling from school libraries. This became apparent when I noticed the jump with Fiction specifically. 
+checkouts %>% 
+  select(monthdate,Category.Group) %>% 
+  group_by(monthdate,Category.Group) %>% 
+  summarize(counts=length(Category.Group)) %>% 
+  ggplot(aes(x=monthdate,y=counts,group=Category.Group,color=Category.Group))+geom_line()
 
-#Another interesting thing here is the pattern of increased language during spring/high summer/declining fall. My small town memory of corn fields is telling me that this could be some kind of immigrant labor (or... just immigration perhaps?) pattern.
+#Another interesting thing here is the pattern of increased language during spring/high summer/declining fall. My small town 
+#memory of corn fields is telling me that this could be some kind of immigrant labor (or... just immigration perhaps?) pattern.
 #Within the Language group of books, a quick look at the Call Number is showing the first word as a language. Exploring this more.
 checkouts$test = word(checkouts$CallNumber,1)
 table(checkouts$test[checkouts$Category.Group=='Language'])
-checkouts$spec_language = ifelse(checkouts$test %in% c('SPANISH','FRENCH','CHINESE','GERMAN','HINDI','ITALIAN','JAPANESE','SWEDISH'),checkouts$test,'')
+checkouts$spec_language = ifelse(checkouts$test %in% c('SPANISH','FRENCH','CHINESE','GERMAN','HINDI','ITALIAN','JAPANESE','SWEDISH'),
+                                 checkouts$test,'')
 
 
+<<<<<<< HEAD
 #Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group. So at least we have something valuable here, certain languages see bumps.
+=======
+#Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group.
+#So at least we have something valuable here, certain languages see bumps.
+>>>>>>> 0db9048a0415b8de79d1fd780a5f7d1b90cadfb3
 checkouts %>% 
   filter(Category.Group=='Language',spec_language!='') %>% 
   select(monthdate,spec_language) %>% 
@@ -111,9 +134,17 @@ checkouts %>%
   ggplot(aes(x=monthdate,y=counts,group=spec_language,color=spec_language,label=spec_language))+geom_line()
 
 
+<<<<<<< HEAD
 
 #checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
 #one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the checkouts generally.
+=======
+checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
+#one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. 
+#It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location 
+#heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the 
+#checkouts generally.
+>>>>>>> 0db9048a0415b8de79d1fd780a5f7d1b90cadfb3
 
 
 #Get most recent report dates only for each bibnumber... Should I add more later to this?
