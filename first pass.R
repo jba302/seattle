@@ -103,10 +103,16 @@ checkouts$spec_language = ifelse(checkouts$test %in% c('SPANISH','FRENCH','CHINE
 
 
 #Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group. So at least we have something valuable here, certain languages see bumps.
-checkouts %>% filter(Category.Group=='Language',spec_language!='') %>% select(monthdate,spec_language) %>% group_by(monthdate,spec_language) %>% summarise(counts=length(spec_language)) %>% ggplot(aes(x=monthdate,y=counts,group=spec_language,color=spec_language,label=spec_language))+geom_line()
+checkouts %>% 
+  filter(Category.Group=='Language',spec_language!='') %>% 
+  select(monthdate,spec_language) %>% 
+  group_by(monthdate,spec_language) %>% 
+  summarise(counts=length(spec_language)) %>% 
+  ggplot(aes(x=monthdate,y=counts,group=spec_language,color=spec_language,label=spec_language))+geom_line()
 
 
-checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
+
+#checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
 #one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the checkouts generally.
 
 
