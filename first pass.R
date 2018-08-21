@@ -112,7 +112,7 @@ checkouts %>%
   ggplot(aes(x=monthdate,y=counts,group=Category.Group,color=Category.Group))+geom_line()
 
 #Another interesting thing here is the pattern of increased language during spring/high summer/declining fall. My small town 
-#memory of corn fields is telling me that this could be some kind of immigrant labor (or... just immigration perhaps?) pattern.
+#memory of corn fields is telling me that this could be some kind of immigrant labor (or... just immigration perhaps? Tourism?) pattern.
 #Within the Language group of books, a quick look at the Call Number is showing the first word as a language. Exploring this more.
 checkouts$test = word(checkouts$CallNumber,1)
 table(checkouts$test[checkouts$Category.Group=='Language'])
@@ -126,6 +126,8 @@ checkouts$spec_language = ifelse(checkouts$test %in% c('SPANISH','FRENCH','CHINE
 #Graphing counts by month by language noted above. French, Chinese, Japanese, Spanish are bigger than the others group.
 #So at least we have something valuable here, certain languages see bumps.
 
+
+
 checkouts %>% 
   filter(Category.Group=='Language',spec_language!='') %>% 
   select(monthdate,spec_language) %>% 
@@ -134,22 +136,50 @@ checkouts %>%
   ggplot(aes(x=monthdate,y=counts,group=spec_language,color=spec_language,label=spec_language))+geom_line()
 
 
+#One more point to address in the checkout data, then I'll move on for now. It looks like the Category Subgroup isn't being populated how I would have expected. The description column seems to have some valuable information here, such as splitting teen from regular short stories. Regex this later, hopefully the book data join will make this easier clean this up. note - Description seems to be an expanded Collection.
+table(droplevels(checkouts$Description[checkouts$Category.Group=='Fiction']))
+
 
 #checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
 #one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the checkouts generally.
 
-checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
-#one difficulty here is that the item's location explodes the join. there's no location identifier in the checkouts. 
-#It it isn't residing in the checkouts, then for now i'll cut it out and progress. I have an idea to test later about location 
-#heat but that will be a different thought process. Right now I'm just trying to get a better feel for how to trend the 
-#checkouts generally.
+
+#now to blow up the checkouts with full book data. the book data needs to be reduced so that this join is a 1:1.
+
+#checkout_merged = checkouts %>% left_join(book_data,by=c('BibNumber','ItemType','Collection'))
+#one difficulty here is that the item's location explodes the join as I'm not seeing a checkout location. So for now, cutting out the location and consolidating this list to a count-by-type level seems to make more sense.
 
 
 
-#Get most recent report dates only for each bibnumber... Should I add more later to this?
-books_updated = book_data %>% group_by(BibNumber) %>%  arrange(desc(ReportDate)) %>% top_n(1,ReportDate)
+#Get most recent report dates only for each bibnumber/Collection, which brings it down to the most recent report for each bib+collection+type, then sums them up. This results in the freshest count of each type that is being joined to the checkout data..
+books_updated = book_data %>% 
+  select(-FloatingItem) %>%
+  group_by(BibNumber,Collection,ItemType) %>%  
+  arrange(desc(ReportDate)) %>% 
+  top_n(1,ReportDate) %>%
+  select(-ItemLocation) %>%
+  mutate(ItemCount = sum(ItemCount)) %>%
+  distinct()
+
+#now I want to convert the checkouts to a monthly checkout level. So I'll pull the barcode and count by exact time (alternate would also work).
+checkouts_summary = checkouts %>% 
+  select(-ItemBarcode,-date) %>% 
+  group_by(Collection,
+           BibNumber,
+           ItemType,
+           CallNumber,
+           monthdate,
+           Description,
+           Code.Type,
+           Format.Group,
+           Format.Subgroup,
+           Category.Group,
+           Category.Subgroup,
+           test,
+           spec_language) %>%
+  summarise(checks = length(CheckoutDateTime))
 
 
-
-
+#so now to see if this works.
+summary_all = merge(checkouts_summary,books_updated,by=c('BibNumber','ItemType','Collection'),all.x=TRUE)
 
